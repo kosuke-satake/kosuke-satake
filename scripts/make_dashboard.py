@@ -28,8 +28,10 @@ from html import escape
 from pathlib import Path
 
 OWNERS = ("kosuke-satake", "kosuke-apps")
-SKIP_REPOS = {"kosuke-apps/.github"}
+SKIP_REPOS = {"kosuke-apps/.github", "kosuke-satake/.github"}
 HIDDEN = {"kosuke-apps/SpellBar"}
+# Pushed by bots or by this very workflow, so "recently updated" would always list them first.
+EXCLUDED_FROM_RECENT = {"kosuke-satake/kosuke-satake", "kosuke-satake/kosuke-satake.github.io"}
 
 # scholar-static vendors a 600 KB library (lucide.js); jules_ws is code written by a bot for a trial.
 EXCLUDED_FROM_LANGUAGES = {"kosuke-satake/scholar-static", "kosuke-satake/jules_ws"}
@@ -105,13 +107,15 @@ def api(path: str, statistics: bool = False):
     token = os.environ.get("GITHUB_TOKEN")
     if token:
         request.add_header("Authorization", f"Bearer {token}")
-    for _ in range(8 if statistics else 1):
+    for _ in range(15 if statistics else 1):
         with urllib.request.urlopen(request, timeout=30) as response:
             if response.status != 202:  # 202: statistics are still being computed
                 body = response.read()
                 return json.loads(body) if body else None
-        time.sleep(2)
-    return None
+        time.sleep(3)
+    # Never publish a dashboard with a repository counted as zero because GitHub was slow: stop, and the page keeps
+    # its last good version.
+    raise RuntimeError(f"GitHub has not computed the statistics for {path}")
 
 
 def public_repos() -> list[dict]:
@@ -365,7 +369,7 @@ def weekday_panel(height: int, counts: list[int], palette: dict) -> str:
 
 
 def release_panel(height: int, rows, now: dt.datetime, palette: dict) -> str:
-    parts = [panel(height, "Latest releases", "kosuke-apps", palette)]
+    parts = [panel(height, "Latest releases", "public repositories", palette)]
     for i, (name, tag, published) in enumerate(rows[:6]):
         y = 90 + i * 25
         parts.append(f'<text x="20" y="{y}" class="legend bold">{escape(name)}</text>')
@@ -379,7 +383,7 @@ def release_panel(height: int, rows, now: dt.datetime, palette: dict) -> str:
 def recent_panel(height: int, repos: list[dict], now: dt.datetime, palette: dict) -> str:
     rows = []
     for repo in repos:
-        if repo["full_name"] in HIDDEN:
+        if repo["full_name"] in HIDDEN or repo["full_name"] in EXCLUDED_FROM_RECENT:
             continue
         pushed = dt.datetime.fromisoformat(repo["pushed_at"].replace("Z", "+00:00"))
         rows.append((repo["name"], pushed, area_of(repo["full_name"])))
@@ -420,7 +424,7 @@ def render(theme: str, first, second, charts, now: dt.datetime) -> str:
     h1, h2, h3 = 270, 250, 250
     y2 = panels_y + h1 + GAP
     y3 = y2 + h2 + GAP
-    height = y3 + h3
+    height = y3 + h3 + 24
     right_x = WIDTH - PANEL_W
     label = "; ".join(f"{n} {l}" for n, l in first + second)
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{height}" viewBox="0 0 {WIDTH} {height}" role="img" aria-label="Activity dashboard: {escape(label)}">
@@ -444,6 +448,7 @@ def render(theme: str, first, second, charts, now: dt.datetime) -> str:
   <g transform="translate({right_x},{y2})">{release_panel(h2, releases, now, palette)}</g>
   <g transform="translate(0,{y3})">{recent_panel(h3, repos, now, palette)}</g>
   <g transform="translate({right_x},{y3})">{stack_panel(h3, palette)}</g>
+  <text x="{WIDTH}" y="{height - 4}" text-anchor="end" class="axis">Updated {now.strftime("%d %b %Y")} (UTC)</text>
 </svg>
 """
 

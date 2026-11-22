@@ -53,9 +53,10 @@ Two open-source website templates that support multiple languages. Open a demo t
 Small, single-purpose apps for iPhone and Mac. The organization is the main place for them: details, downloads, privacy
 notes and releases. Check [Kosuke Apps](https://github.com/kosuke-apps).
 
+<!-- apps:start -->
 <table>
   <tr>
-    <td width="33%" align="center" valign="top"><a href="https://github.com/kosuke-apps/Headway"><img src="https://raw.githubusercontent.com/kosuke-apps/.github/main/profile/assets/icons/headway.png" width="56" alt="Headway"><br><b>Headway</b></a><br><sub>Madison buses, live</sub></td>
+    <td width="33%" align="center" valign="top"><a href="https://github.com/kosuke-apps/Routeline"><img src="https://raw.githubusercontent.com/kosuke-apps/.github/main/profile/assets/icons/routeline.png" width="56" alt="Routeline"><br><b>Routeline</b></a><br><sub>Madison buses, live</sub></td>
     <td width="33%" align="center" valign="top"><a href="https://github.com/kosuke-apps/Kitbag"><img src="https://raw.githubusercontent.com/kosuke-apps/.github/main/profile/assets/icons/kitbag.png" width="56" alt="Kitbag"><br><b>Kitbag</b></a><br><sub>A student's day in one app</sub></td>
     <td width="33%" align="center" valign="top"><a href="https://github.com/kosuke-apps/Mantissa"><img src="https://raw.githubusercontent.com/kosuke-apps/.github/main/profile/assets/icons/mantissa.png" width="56" alt="Mantissa"><br><b>Mantissa</b></a><br><sub>Exact maths, offline</sub></td>
   </tr>
@@ -65,6 +66,7 @@ notes and releases. Check [Kosuke Apps](https://github.com/kosuke-apps).
     <td width="33%" align="center" valign="top"><a href="https://github.com/kosuke-apps/Tapdeck"><img src="https://raw.githubusercontent.com/kosuke-apps/.github/main/profile/assets/icons/tapdeck.png" width="56" alt="Tapdeck"><br><b>Tapdeck</b></a><br><sub>Audio routing and recording</sub></td>
   </tr>
 </table>
+<!-- apps:end -->
 
 ## Sandbox
 

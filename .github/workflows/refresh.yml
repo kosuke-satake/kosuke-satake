@@ -1,0 +1,56 @@
+name: Refresh the page
+
+# Keeps the profile page current without anyone editing it: the apps grid follows the apps organization, the dashboard
+# follows GitHub's statistics and the roadmap follows the rover's README. Every run also checks that each link and
+# image on the page opens. If any step fails nothing is committed, the page keeps its last good version and GitHub
+# e-mails the owner about the failed run. The demo screenshots are not part of this job: they need macOS and Chrome
+# (scripts/capture_demos.sh).
+on:
+  schedule:
+    - cron: "17 3 * * *" # every day, 03:17 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "data/**"
+      - "scripts/**"
+      - ".github/workflows/refresh.yml"
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Rover roadmap
+        run: python3 scripts/make_roadmap.py
+      - name: Apps grid
+        run: python3 scripts/make_apps.py
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Activity dashboard
+        run: python3 scripts/make_dashboard.py
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Every link opens
+        run: python3 scripts/check_links.py
+      - name: Commit the result
+        run: |
+          if git diff --quiet -- README.md assets; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md assets
+          git commit -m "Refresh the page"
+          git pull --rebase origin main
+          git push
